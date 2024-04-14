@@ -1,6 +1,6 @@
 # Transformer Model for Machine Translation
 
-This project implements a transformer model from scratch using PyTorch, aimed at performing translation tasks from English to Italian. It leverages the "Helsinki-NLP/opus_books" dataset from Hugging Face for training and evaluation.
+This project following the video "https://www.youtube.com/watch?v=ISNdQcPhsts&t=2049s", implements a transformer model from scratch using PyTorch, aimed at performing translation tasks from English to Italian. It leverages the "Helsinki-NLP/opus_books" dataset from Hugging Face for training and evaluation. 
 
 ## Overview
 
@@ -14,6 +14,7 @@ The project consists of several Python files essential to define, train, and eva
 - `dataset.py`: Defines a PyTorch dataset for loading and preprocessing the "Helsinki-NLP/opus_books" dataset for English to Italian translation.
 - `config.py`: Stores configuration parameters for the model and training process, making it easy to adjust hyperparameters.
 - `train.py`: Orchestrates the training process, including data loading, model instantiation, and the training loop.
+- `validation.py`: Implement the validation process, including a greedy_decode method to generate the next token.
 
 ### Configuration (`config.py`)
 
@@ -57,7 +58,7 @@ Before running the project, ensure you have the following installed:
 
 1. Clone the repository to your local machine:
    \```bash
-   git clone https://github.com/yourusername/yourprojectname.git
+   git clone https://github.com/llinsenli/transformer_from_scratch.git
    \```
 2. Install the required Python packages:
    \```bash
