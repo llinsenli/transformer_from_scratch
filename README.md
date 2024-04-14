@@ -1,6 +1,6 @@
 # Transformer Model for Machine Translation
 
-This project following the video "https://www.youtube.com/watch?v=ISNdQcPhsts&t=2049s", implements a transformer model from scratch using PyTorch, aimed at performing translation tasks from English to Italian. It leverages the "Helsinki-NLP/opus_books" dataset from Hugging Face for training and evaluation. 
+This project following the video "https://www.youtube.com/watch?v=ISNdQcPhsts&t=2049s" by Umar Jamil, implements a transformer model from scratch using PyTorch, aimed at performing translation tasks from English to Italian. It leverages the "Helsinki-NLP/opus_books" dataset from Hugging Face for training and evaluation. 
 
 ## Overview
 
