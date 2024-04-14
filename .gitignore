@@ -1,0 +1,12 @@
+# Ignore all log files
+*.log
+
+# Ignore node modules
+weights/
+
+# Ignore specific files
+#path/to/some/unwanted/file
+
+# Ignore large files or directories
+#large_data_directory/
+#large_file.zip
