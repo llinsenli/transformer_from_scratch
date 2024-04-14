@@ -10,7 +10,7 @@ import warnings
 
 def greedy_decode(model, source, source_mask, tokenizer_src, tokenizer_tgt, max_len, device):
     '''
-    Autoregressive Decoder: at time step t=0, the decoder_input is (encoder_output, <SOS>), the output is a probability distribution over the vocab_size.
+    Autoregressive Decoder: at time step t=0, the decoder_input is (encoder_output, [<SOS>]), the output is a probability distribution over the vocab_size.
     Search the next token <t0_p> through greedy on this probability distribution. At time t=2, the decoder_input is (encoder_output, [<SOS>, <t0_p>]) and so on. 
     Until the decoder_input reach the max_len or the output token==<EOS>, stop the loop and return the decoder_input.
     '''
@@ -33,9 +33,9 @@ def greedy_decode(model, source, source_mask, tokenizer_src, tokenizer_tgt, max_
         out = model.decode(encoder_output, source_mask, decoder_input, decoder_mask) # (batch_size, seq_len, d_model)
 
         # Get the next token probability
-        prob = model.project(out[:, -1]) # (batch_size, vocab_size)
+        prob = model.project(out[:, -1]) # (batch_size, vocab_size), this syntax selects the last element along the second dimension (sequence length in many NLP and time series models). 
         # Select the token with the max probability (since this is a greedy search)
-        _, next_word = torch.max(prob, dim=1)
+        _, next_word = torch.max(prob, dim=1) # Return the values, indices, we only need the indices as this is the word ids
         # Append the next_word to the decoder_input for the next generatation
         decoder_input = torch.cat([
             decoder_input,
