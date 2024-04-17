@@ -6,6 +6,9 @@ weights/
 
 # Ignore specific files
 #path/to/some/unwanted/file
+__pycache__
+.DS_Store
+.vscode
 
 # Ignore large files or directories
 #large_data_directory/
