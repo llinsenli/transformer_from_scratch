@@ -13,7 +13,39 @@ from tokenizers.pre_tokenizers import Whitespace
 from pathlib import Path
 
 class BilingualDataset(Dataset):
+    '''
+    A custom dataset class for handling bilingual text data, particularly suited for translation tasks. This dataset prepares and formats pairs of sentences from two different languages into tensors that are suitable for training sequence-to-sequence models.
 
+    Key Processes:
+    1. Initializes the dataset with source and target language tokenizers and maximum sequence length.
+    2. Stores special tokens (Start of Sentence, End of Sentence, and Padding) for text processing.
+    3. Provides a method to access the length of the dataset.
+    4. Implements a method to get an item from the dataset by index, which includes detailed processing:
+       - Tokenizing and encoding the source and target text into integer IDs using the respective language tokenizers.
+       - Padding the tokenized integer sequences to a fixed length (`seq_len`) to handle variable-length sentences, ensuring all input sequences fit into the model uniformly. This includes adding Start of Sentence (SOS) and End of Sentence (EOS) tokens where appropriate, and filling shorter sequences with Padding (PAD) tokens to reach the required length.
+       - Generating masks for the encoder to prevent attention mechanisms from considering padded areas of the input, thus focusing only on meaningful parts of the sentence.
+       - Creating a combined mask for the decoder that integrates sequence masking (to prevent the decoder from peaking ahead into future tokens) and padding masking.
+
+    The output of the `__getitem__` method is a dictionary containing:
+       - "encoder_input": Tensor of shape (seq_len), constructed by concatenating the SOS token, encoded source tokens, EOS token, and necessary PAD tokens to reach the defined sequence length. This sequence forms the complete input for the encoder.
+       - "decoder_input": Tensor of shape (seq_len), beginning with an SOS token followed by the encoded target tokens and sufficient PAD tokens to maintain uniform length. This setup prepares the decoder's input excluding the EOS which is reserved for the label.
+       - "encoder_mask": Binary tensor of shape (1, 1, seq_len) indicating valid positions (where there's no padding) for the encoder. This mask ensures that the attention mechanism of the encoder does not consider the padded areas of the input.
+       - "decoder_mask": Binary tensor of shape (1, seq_len, seq_len) that combines future token masking and padding masking for the decoder, ensuring that each decoding step only considers previous tokens and valid areas of the input.
+       - "label": Tensor of shape (seq_len) for training the model, containing the expected output tokens followed by an EOS token and then PAD tokens. This tensor is used as the ground truth during the training of the model.
+       - "src_text": Original source text as a string.
+       - "tgt_text": Original target text as a string.
+
+    Args:
+        ds (Dataset): The underlying dataset containing source and target sentences.
+        tokenizer_src (Tokenizer): Tokenizer for the source language.
+        tokenizer_tgt (Tokenizer): Tokenizer for the target language.
+        src_lang (str): Source language code.
+        tgt_lang (str): Target language code.
+        seq_len (int): The fixed sequence length to which all sentences are padded or truncated.
+
+    Returns:
+        A dictionary containing the processed features for a single translation pair, including input IDs, attention masks, and labels for training.
+    '''
     def __init__(self, ds: Dataset, tokenizer_src: Tokenizer, tokenizer_tgt: Tokenizer, src_lang: str, tgt_lang: str, seq_len: int) -> None:
         super().__init__()
 
@@ -139,6 +171,32 @@ def get_all_sentences(ds, lang):
         yield item['translation'][lang]
 
 def get_or_build_tokenizer(config, ds, lang):
+    """
+    Retrieves an existing tokenizer or builds a new one if it doesn't exist.
+    
+    This function first checks if a tokenizer configuration file exists for the specified language. If it does not,
+    a new tokenizer is created, trained, and saved. The tokenizer is set up to handle the specific needs of language
+    processing for machine translation, including support for special tokens and a pre-tokenization step that splits
+    on whitespace.
+
+    Parameters:
+        config (dict): Configuration dictionary containing tokenizer file paths and other settings.
+        ds (Dataset): Dataset from which sentences are extracted to train the tokenizer.
+        lang (str): Language code indicating the target language of the tokenizer (e.g., 'en' for English).
+
+    Returns:
+        Tokenizer: A tokenizer that is either loaded from a pre-existing file or newly trained.
+
+    Steps:
+        1. Determine the path of the tokenizer based on the provided language.
+        2. If the tokenizer file doesn't exist, proceed to create and train a tokenizer:
+           a. Initialize a new tokenizer with a basic word-level model and unknown token handler.
+           b. Define a pre-tokenizer that splits the text based on whitespace.
+           c. Set up a trainer with special tokens and a minimum frequency threshold for token inclusion.
+           d. Train the tokenizer using an iterator that generates sentences from the dataset.
+           e. Save the newly trained tokenizer to the specified path.
+        3. If the tokenizer file exists, load the tokenizer from the specified path.
+    """
     tokenizer_path = Path(config['tokenizer_file'].format(lang)) # config['tokenizer_file'] = '../tokenizers/tokenizer_{0}.json'
     if not Path.exists(tokenizer_path): # If the path don't exist, then create one
         tokenizer = Tokenizer(WordLevel(unk_token='[UNK]')) # Map the unknown word to '[UNK]'
@@ -157,7 +215,7 @@ def get_ds(config):
     1. Read the dataset from HuggingFace 
         ds_raw:
             Dataset({
-                eatures: ['id', 'translation'],
+                features: ['id', 'translation'],
                 num_rows: 32332
             })
     2. Train/load(get_or_build_tokenizer) the two tokenizers for target language and source language

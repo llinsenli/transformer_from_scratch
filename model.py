@@ -166,7 +166,7 @@ class MultiHeadAttentionBlock(nn.Module):
         self.h = h
         # Make sure d_model is divisible by h
         assert d_model % h == 0, "d_model is not divisible by h"
-        self.d_k = d_model // h # The dimention of each head
+        self.d_k = d_model // h # The dimention of each head: head_size
         # Define the parameter matrix
         self.w_q = nn.Linear(d_model, d_model) # Wq
         self.w_k = nn.Linear(d_model, d_model) # Wk
@@ -181,9 +181,15 @@ class MultiHeadAttentionBlock(nn.Module):
         mask: mask the position in attention_scores matrix //(batch_size, 1, seq_len, seq_len) or (batch_size, 1, 1, seq_len)
         dropout: a nn.Module object with defined dropout rate
         '''
-        d_k = query.shape[-1]
+        d_k = query.shape[-1] # head_size
+        '''
+        Scaled Dot-Product Attention:
+        # Scaling the dot product of queries (q) and keys (k) by 1/sqrt(head_size) prevents the values from becoming too large,
+        # avoiding an overly peaky softmax distribution. This helps maintain a more uniform distribution across the softmax output,
+        # which is crucial for effective gradient propagation during training.
+        '''
         #  (batch_size, h, seq_len, d_k) * (batch_size, h, d_k, seq_len)  --> (batch_size, h, seq_len, seq_len)
-        attention_scores = (query @ key.transpose(-2, -1))/math.sqrt(d_k) 
+        attention_scores = (query @ key.transpose(-2, -1))/math.sqrt(d_k) # Scaled attention
         if mask is not None:
             '''
             Padding Mask or Look-ahead Mask
