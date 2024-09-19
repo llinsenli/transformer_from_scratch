@@ -16,6 +16,22 @@ The project consists of several Python files essential to define, train, and eva
 - `train.py`: Orchestrates the training process, including data loading, model instantiation, and the training loop.
 - `validation.py`: Implement the validation process, including a greedy_decode method to generate the next token.
 
+### Modeling Transformer (`model.py`)
+
+The `model.py` file contains the implementation of the Transformer model, including key components such as input embeddings, positional encoding, multi-head attention, and feed-forward layers. This file provides a comprehensive setup for training transformers in various NLP tasks such as translation.
+
+#### Key Components:
+
+- **`InputEmbeddings`**: Converts input token IDs into embeddings, scaled by the square root of the model dimension (`d_model`).
+- **`PositionalEncoding`**: Adds positional encoding to the input embeddings to maintain sequence information.
+- **`MultiHeadAttentionBlock`**: Implements multi-head self-attention, allowing the model to focus on different positions of the input sequence.
+- **`FeedForwardBlock`**: Applies position-wise feed-forward networks within the transformer architecture, consisting of two linear transformations with a ReLU activation in between.
+- **`LayerNormalization`**: Normalizes the outputs of other layers to stabilize learning and improve model performance.
+- **`ResidualConnection`**: Implements skip connections around sublayers within the transformer architecture.
+- **`EncoderBlock` and `DecoderBlock`**: Contain stacks of self-attention and feed-forward layers, crucial for the encoder and decoder components of the transformer.
+- **`Encoder` and `Decoder`**: Organize multiple encoder and decoder blocks into coherent units processing sequential inputs.
+- **`ProjectionLayer`**: Projects the decoder output to the vocabulary space, facilitating the prediction of output tokens.
+
 ### Dataset Handling (`dataset.py`)
 
 The `dataset.py` module is integral to the data management process for a bilingual text translation task, specifically for translating English to Italian using the "Helsinki-NLP/opus_books" dataset(https://huggingface.co/datasets/Helsinki-NLP/opus_books). This module hosts the `BilingualDataset` class, which prepares and structures the bilingual data for training neural translation models.
@@ -105,6 +121,13 @@ Features include:
 - Model initialization and training
 - Periodic saving of model checkpoints
 
+### Validation (`validation.py`)
+
+The `validation.py` script is responsible for evaluating the performance of the Transformer model using a greedy decoding strategy. It performs autoregressive decoding to generate predictions from the validation dataset and compares these predictions to the actual target sequences. Features include:
+- **Autoregressive Decoding**: Implements a greedy decoding approach that selects the highest probability token at each step.
+- **Validation Performance Assessment**: Evaluates the model's translation accuracy on a given validation dataset.
+- **Result Display**: Outputs the source, target, and predicted sequences side by side for easy comparison and evaluation.
+
 ## Getting Started
 
 ### Prerequisites
@@ -119,40 +142,43 @@ Before running the project, ensure you have the following installed:
 ### Installation
 
 1. Clone the repository to your local machine:
-   \```bash
+   ```bash
    git clone https://github.com/llinsenli/transformer_from_scratch.git
-   \```
+   ```
 2. Install the required Python packages:
-   \```bash
+   ```bash
    pip install torch datasets
-   \```
+   ```
 
 ### Training the Model
 
 To train the transformer model on the translation task, navigate to the project directory and run:
 
-\```bash
+```bash
 python train.py
-\```
+```
 
 Replace the placeholders in the `config.py` file with your specific model and training settings.
 
 ### Evaluation
 
-(Instructions on evaluating the model, possibly including translating sample sentences or calculating performance metrics)
+To run inference translation task on trained model, run:
 
-## Contributing
+```bash
+python validation.py
+```
 
-(Instructions for contributing to the project, if applicable)
+Specify the epoch number as the weight name of the model to load the weight in `get_weights_file_path` funciton.
+
 
 ## License
 
-(Information about the project's license, if applicable)
+This project is licensed under the [MIT License](LICENSE).
 
 ## Acknowledgments
 
 - The "Attention is All You Need" paper and its authors for introducing the transformer model.
 - The Hugging Face team for providing the "Helsinki-NLP/opus_books" dataset.
-- (Any other acknowledgments)
+- Umar Jamil‘s video
 
 
